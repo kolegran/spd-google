@@ -26,6 +26,8 @@ public class IndexService {
             IndexWriterConfig indexWriterConfig = new IndexWriterConfig(analyzer);
             IndexWriter writer = new IndexWriter(memoryIndex, indexWriterConfig);
 
+            // possible https://docs.oracle.com/javase/7/docs/api/java/util/ConcurrentModificationException.html
+            // In case multiple users would use com.github.kolegran.spdgoogle.index.IndexController.createIndex simultaneously
             for (Map.Entry<String, ParsePageDto> entry : pages.entrySet()) {
                 Document document = new Document();
 
@@ -37,8 +39,13 @@ public class IndexService {
                 writer.addDocument(document);
             }
             pages.clear();
+            // if any exception is thrown between lines 28 and 43 then writer would never close,
+            // consider using try-with-resources as IndexWriter implements java.io.Closeable
             writer.close();
         } catch (IOException e) {
+            // Wrapping checked exception into generic unchecked exception is considered a bad practice
+            // Declare and throw a dedicated exception with meaningful message instead of generic IllegalStateException
+            // see http://cwe.mitre.org/data/definitions/397.html
             throw new IllegalStateException(e);
         }
     }

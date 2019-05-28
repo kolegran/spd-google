@@ -7,6 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+// Not important in test task, but it's considered a bad practice to use import-on-demand (package.*)
 import javax.validation.constraints.*;
 import java.util.Map;
 import java.util.Set;

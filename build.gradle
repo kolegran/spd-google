@@ -2,7 +2,7 @@ plugins {
 	id 'org.springframework.boot' version '2.1.5.RELEASE'
 	id 'java'
 }
-
+// duplicated sections, why?
 plugins {
 	id 'war'
 }
