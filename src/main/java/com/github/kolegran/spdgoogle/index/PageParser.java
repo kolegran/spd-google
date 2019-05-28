@@ -16,9 +16,11 @@ public class PageParser {
     private final HttpService httpService;
 
     public Map<String, ParsePageDto> parsePageByUrl(int depth, Set<String> links) {
+        // maybe consider check 'depth < 1', just in case.
         if (depth == 0) { return pages; }
 
         Set<String> nestedLinks = links.stream()
+                // Not critical, but still: complex operations in a stream are a bit hard to read, consider extracting a method
                 .map(link -> {
                     Elements urls = new Elements();
                     try {
@@ -26,11 +28,14 @@ public class PageParser {
                         pages.put(link, createParsePage(document));
                         urls = document.body().select("a[href]");
                     } catch (IOException e) {
+                        // Why is this statement here? What is it's purpose? Should it be 'return new Elements();'?
                         new Elements();
                     }
                     return urls;
                 })
+                // There can't be any nulls at this stage
                 .filter(Objects::nonNull)
+                // Not critical, but still: streams within streams are a bit hard to read and debug, consider extracting a method
                 .flatMap(element -> element.stream()
                         .map(link -> link.attr("abs:href") + link.attr("rel"))
                         .map(link -> link.contains("#") ? link.substring(0, link.indexOf("#")) : link)

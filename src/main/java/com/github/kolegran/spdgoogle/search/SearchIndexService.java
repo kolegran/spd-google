@@ -26,6 +26,7 @@ public class SearchIndexService {
 
     private final Directory memoryIndex;
 
+    // First of all, this method is long, therefore it's difficult to understand.
     public PageDto searchIndex(String inField, String q, String sortType, int pageNum) {
         String[] fragments = new String[0];
 
@@ -35,6 +36,8 @@ public class SearchIndexService {
             IndexSearcher searcher = new IndexSearcher(indexReader);
 
             Query query = new QueryParser(inField, analyzer).parse(q);
+            // Why did you move some numbers to constants, but other used inline?
+            // Move all 'magic numbers' to constants with appropriate naming
             TopDocs topDocs = searcher.search(query, pageNum*10, createSort(sortType));
 
             QueryScorer scorer = new QueryScorer(query);
@@ -45,7 +48,9 @@ public class SearchIndexService {
             for (ScoreDoc scoreDoc : topDocs.scoreDocs) {
                 Document document = searcher.doc(scoreDoc.doc);
 
+                // same with Strings, it's better to extract constants
                 String body = document.get("body");
+                // Is there an alternative to the deprecated method? Not critical for the test task though.
                 TokenStream stream = TokenSources.getAnyTokenStream(indexReader, scoreDoc.doc, "body", analyzer);
                 fragments = highlighter.getBestFragments(stream, body, MAX_NUM_FRAGMENTS);
 
@@ -59,12 +64,15 @@ public class SearchIndexService {
                     .build();
 
         } catch (IOException | ParseException | InvalidTokenOffsetsException e) {
+            // throwing generic exception is bad a practice.
             throw new IllegalStateException(e);
         }
     }
 
     private Sort createSort(String sortType) {
-        return sortType.equals("alphabet") ? new Sort(new SortField("sortByTitle", SortField.Type.STRING_VAL, false)) : new Sort();
+        return sortType.equals("alphabet")
+            ? new Sort(new SortField("sortByTitle", SortField.Type.STRING_VAL, false))
+            : new Sort();
     }
 
     private List<PageItemDto> createPageItem(List<Document> documents, String[] fragments) {
